@@ -213,18 +213,22 @@ margin-bottom: 6px
   box-sizing: border-box;
 }
 /* Mobile styles */
-@media screen and (max-width: 1024px) {
+@media (pointer: coarse) {
+  /* This targets devices with touch input (usually mobile) */
   .swipe-container {
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    width: 100vw;
   }
 
   .swipe-panel {
-    flex: 0 0 100%;
+    flex: 0 0 100vw;
+    padding: 1rem;
     scroll-snap-align: start;
   }
 }
+
 /* Desktop styles */
 @media screen and (min-width: 1025px) {
   .swipe-container {

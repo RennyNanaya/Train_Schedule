@@ -213,7 +213,7 @@ margin-bottom: 6px
   box-sizing: border-box;
 }
 /* Mobile styles */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) {
   .swipe-container {
     display: flex;
     overflow-x: auto;
@@ -226,7 +226,7 @@ margin-bottom: 6px
   }
 }
 /* Desktop styles */
-@media screen and (min-width: 769px) {
+@media screen and (min-width: 1025px) {
   .swipe-container {
     display: grid;
     grid-template-columns: 80% 20%;

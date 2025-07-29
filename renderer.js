@@ -288,7 +288,7 @@ function renderWeekGrid(label, range, events) {
     const box = document.createElement("div");
     box.className = "entry-box";
     box.innerHTML = `
-      <div class="highlight">${evt.job} - ${evt.client} ${evt.location}</div>
+      <div class="highlight_job">${evt.job} - </div><div class="highlight">${evt.client} ${evt.location}</div>
 	  <div>${evt.CarNo} - ${evt.Commodity}</div>
 	  <div>${evt.tests.map(t => t.trim()).join(", ")}</div>
       <div class="assignment">${evt.assigned}</div>

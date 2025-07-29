@@ -117,14 +117,13 @@ margin: 0;
   visibility: hidden;
   height: 0;
   transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
-
   overflow: hidden;
   background-color: #FFFFFF;
   font-weight: 600;
   font-size: 0.85em;
   box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
   white-space: normal;
-  line-height: 1.5;
+  line-height: 1.2;
 }
 
 .entry-box.visible {
@@ -138,21 +137,22 @@ margin: 0;
   margin-bottom: 1px;
 }
 
-
-
-.jobnumber {
-line-height: 1; /* or 1.2, or whatever feels snug */
-  font-size: 1.2em;
-  font-weight: bold;
-margin-bottom: 6px
-}
-
 .highlight {
 line-height: 1; /* or 1.2, or whatever feels snug */
   color: DarkRed;
   border-radius: 3px;
+display: inline-block;
+  font-size: 1.2em;
+  font-weight: 700;
+margin-bottom: 6px
+}
 
-  font-size: 1.3em;
+.highlight_job {
+line-height: 1; /* or 1.2, or whatever feels snug */
+  color: DarkRed;
+  border-radius: 3px;
+display: inline-block;
+  font-size: 1.2em;
   font-weight: 700;
 margin-bottom: 6px
 }
@@ -164,13 +164,14 @@ margin-bottom: 6px
   font-size: 1.2em;
   font-weight: 700;
   line-height: 1.2;
-  padding: 2px 8px; /* More horizontal padding for oblong shape */
+  padding: 1px 8px; /* More horizontal padding for oblong shape */
   border: 3px solid #b0c4de; /* Bubble border */
   border-radius: 20px; /* 🍩 The magic pill shape */
   margin-bottom: 6px;
 }
 .assignment:empty::before {
-  content: "No assignment yet";
+  content: "Not assigned yet";
+font-size: 0.8em;
   opacity: 0.5;
   color: red;
   font-style: italic;
@@ -212,15 +213,19 @@ margin-bottom: 6px
     padding: 1rem;
     scroll-snap-align: start;
   }
+.highlight_job {
+visibility: hidden;
+display: none;
 }
 
 /* Desktop styles */
 @media screen and (min-width: 1025px) {
   .swipe-container {
     display: grid;
-    grid-template-columns: 80% 20%;
+    grid-template-columns: 75% 25%;
     gap: 1rem;
     width: 100%;
+padding: 1rem;
   }
 
   .swipe-panel {

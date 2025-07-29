@@ -31,7 +31,6 @@ body {
     }
 
 #sidebar {
-
 	font-size: 0.85em
   flex: 1;
   display: flex;
@@ -57,20 +56,17 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  
 }
 
 .week-header {
 background-color: #fff7f3; /* Light Tangelo tint */
   color: var(--color-tangelo);
   border-left: 5px solid var(--color-tangelo);
-
   flex: 0 0 auto;
   margin: 0;
   padding: 6px 10px;
   font-size: 2.4em; /* Even larger header to grab attention */
   font-weight: 700;
-
   line-height: 1;
 }
 
@@ -80,7 +76,6 @@ background-color: #fff7f3; /* Light Tangelo tint */
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   overflow: hidden;
-  
 }
 
 
@@ -92,7 +87,6 @@ background-color: #fff7f3; /* Light Tangelo tint */
   padding: 6px;
   background-color: #fff7f3;
   border: 1px solid var(--color-silver); /* Neutral border */
-
   box-sizing: border-box;
 }
 
@@ -109,7 +103,6 @@ margin: 0;
   flex-direction: column;
   gap: 4px;
   overflow: hidden;
-
 }
 
 .entry-box {
@@ -175,7 +168,6 @@ font-size: 0.8em;
   opacity: 0.5;
   color: red;
   font-style: italic;
-
 }
 
     #future-list li {
@@ -183,7 +175,7 @@ font-size: 0.8em;
       font-size: 0.9em;
     }
 
-  .refresh-timer {
+.refresh-timer {
   position: fixed;
   bottom: 10px;
   right: 20px;
@@ -194,7 +186,7 @@ font-size: 0.8em;
   border-radius: 6px;
   font-size: 0.9em;
 }
- .refresh-timer.flash {
+.refresh-timer.flash {
   animation: pulse 0.8s ease;
 }
 
@@ -213,9 +205,10 @@ font-size: 0.8em;
     padding: 1rem;
     scroll-snap-align: start;
   }
-.highlight_job {
-visibility: hidden;
-display: none;
+	.highlight_job {
+	visibility: hidden;
+	display: none;
+	}
 }
 
 /* Desktop styles */
@@ -233,10 +226,6 @@ padding: 1rem;
     overflow: visible;
   }
 }
-
-
-
-
 
 @keyframes pulse {
   0% { opacity: 1; }

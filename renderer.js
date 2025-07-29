@@ -5,21 +5,31 @@ const eventsContainer = document.getElementById("events");
 const upcomingContainer = document.getElementById("upcoming");
 const lastWeekContainer = document.getElementById("last-week-summary"); // If you use one
   
- fetch("schedule.json")
-    .then(res => {
-      if (!res.ok) throw new Error("Primary fetch failed");
+fetch("schedule.json")
+  .then(res => {
+    if (!res.ok) throw new Error("Primary fetch failed");
+    return res.json();
+  })
+  .catch(() => {
+    console.warn("Primary fetch failed. Trying fallback...");
+    return fetch("").then(res => {
+      if (!res.ok) throw new Error("Fallback fetch failed");
       return res.json();
-    })
-    .catch(() => {
-      console.warn("Primary fetch failed. Trying fallback...");
-      return fetch("").then(res => {
-        if (!res.ok) throw new Error("Fallback fetch failed");
-        return res.json();
-      });
-    })
+    });
+  })
+  .then(data => {
+    const validJobs = [];
+    const invalidDateJobs = [];
 
-    .then(data => {
-      jobData = data.sort((a, b) => {
+data.forEach(job => {
+      if (isActualDate(job.date)) {
+        validJobs.push({ ...job, parsedDate: new Date(job.date) });
+      } else {
+        invalidDateJobs.push(job);
+      }
+    });
+
+      jobData = validJobs.sort((a, b) => {
         const dA = parseJobDate(a.date);
         const dB = parseJobDate(b.date);
         return (!dA ? 1 : !dB ? -1 : dB - dA);
@@ -51,7 +61,17 @@ loadJobData();
 
 // 🔄 Refresh every 10 minutes (600,000 ms)
 setInterval(loadJobData, 600000);
+
+function isActualDate(dateStr) {
+  // Let blank values pass through untouched — they're handled later
+  if (!dateStr || dateStr.trim() === "") return true;
+
+  const d = new Date(dateStr);
+  return d instanceof Date && !isNaN(d);
+}
+
   
+
 function getSunday(date = new Date()) {
   const d = new Date(date);
   d.setDate(d.getDate() - d.getDay());

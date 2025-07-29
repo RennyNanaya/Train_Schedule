@@ -198,6 +198,34 @@ margin-bottom: 6px
   animation: pulse 0.8s ease;
 }
 
+.swipe-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+.swipe-panel {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+/* Only enable swipe layout on screens <= 768px */
+@media (min-width: 769px) {
+  .swipe-container {
+    flex-direction: column;
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+
+  .swipe-panel {
+    flex: unset;
+  }
+}
+
+
 @keyframes pulse {
   0% { opacity: 1; }
   50% { opacity: 0.5; }

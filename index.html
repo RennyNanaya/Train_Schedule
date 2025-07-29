@@ -6,32 +6,29 @@
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div class="swipe-container">
-  <div class="swipe-panel" id="panel-schedule">
+  <div class="swipe-container">
+    <div class="swipe-panel" id="panel-schedule">
+      <div id="events"></div>
+    </div>
 
+    <div class="swipe-panel" id="panel-trains">
+      <div id="sidebar">
+        <h2>📅 Upcoming Trains</h2>
+        <div id="upcoming">
+          <ul id="future-list"></ul>
+        </div>
 
-  <div id="events"></div>
- </div>
-
+        <div id="last-week-summary">
+          <h3>Previous Trains</h3>
+          <ul id="last-week-list"></ul>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="swipe-panel" id="panel-trains">
 
-<div id="sidebar">
-<h2>📅 Upcoming Trains</h2>
-  <div id="upcoming">
-    
-    <ul id="future-list"></ul>
+  <div id="refresh-countdown" class="refresh-timer">
+    Next refresh in: <span id="countdown">10:00</span>
   </div>
-
-<ul id="future-list"></ul>
-<div id="last-week-summary">
-  <h3>Previous Trains</h3>
-  <ul id="last-week-list"></ul>
-</div>
-  </div>
-</div>
-
-<div id="refresh-countdown" class="refresh-timer">Next refresh in: <span id="countdown">10:00</span></div>
 
   <script src="renderer.js"></script>
 </body>

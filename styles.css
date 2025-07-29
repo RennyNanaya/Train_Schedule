@@ -8,15 +8,13 @@ body::before {}
   --color-tangelo: #F36F21;
 }
 
-    body {
-      font-family: "Segoe UI", "Open Sans", sans-serif;
-
-	  font-size: 1.1em
-      margin: 20px;
-display: flex;
-      gap: 10px;
-      align-items: flex-start;
-    }
+body {
+  font-family: "Segoe UI", "Open Sans", sans-serif;
+  font-size: 1.1em;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
 
     #events {
       flex: 3;
@@ -33,7 +31,7 @@ display: flex;
     }
 
 #sidebar {
-	width: 280px
+
 	font-size: 0.85em
   flex: 1;
   display: flex;
@@ -183,6 +181,7 @@ margin-bottom: 6px
       margin-bottom: 8px;
       font-size: 0.9em;
     }
+
   .refresh-timer {
   position: fixed;
   bottom: 10px;
@@ -198,20 +197,6 @@ margin-bottom: 6px
   animation: pulse 0.8s ease;
 }
 
-.swipe-container {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  width: 100%;
-}
-
-.swipe-panel {
-  flex: 0 0 100%;
-  scroll-snap-align: start;
-  padding: 1rem;
-  box-sizing: border-box;
-}
 /* Mobile styles */
 @media (pointer: coarse) {
   /* This targets devices with touch input (usually mobile) */

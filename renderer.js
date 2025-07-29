@@ -12,7 +12,7 @@ const lastWeekContainer = document.getElementById("last-week-summary"); // If yo
     })
     .catch(() => {
       console.warn("Primary fetch failed. Trying fallback...");
-      return fetch("G:\Winnipeg\TRAINS\schedule.json").then(res => {
+      return fetch("").then(res => {
         if (!res.ok) throw new Error("Fallback fetch failed");
         return res.json();
       });
@@ -27,12 +27,20 @@ const lastWeekContainer = document.getElementById("last-week-summary"); // If yo
 
       const nextWeekRange = getWeekRange(new Date(), 1);
       const scheduledJobs = jobData.filter(isScheduled);
-      const upcomingJobs = jobData.filter(job => isUpcoming(job, nextWeekRange.end));
+      //const upcomingJobs = jobData.filter(job => isUpcoming(job, nextWeekRange.end));
+
+
+const upcomingJobs = jobData.filter(job => {
+  const d = parseJobDate(job.date);
+  return !d || d > nextWeekRange.end;
+});
+
+console.log("nextWeekRange:", nextWeekRange.start.toDateString(), "→", nextWeekRange.end.toDateString());
+console.log(upcomingJobs);
 if (eventsContainer) eventsContainer.innerHTML = "";
   if (upcomingContainer) upcomingContainer.innerHTML = "";
       renderScheduledWeeks(scheduledJobs);
 rotateOverflowEntries(); // 👈 New sparkle added here
-	  
       renderJobList("upcoming", upcomingJobs);
       renderLastWeekSummary(jobData);
     });
@@ -112,7 +120,6 @@ function renderLastWeekSummary(jobData) {
     if (!evt.date) return false;
 
     const d = parseJobDate(evt.date)
-    console.log("🔍 Checking:", evt.job, evt.date, "→", d.toDateString());
 
     return d >= oneWeekAgoStart && d < oneWeekAgoEnd;
   });
@@ -185,6 +192,7 @@ function rotateOverflowEntries() {
   });
 }
 function renderJobList(containerId, jobs, fallbackMessage = "No jobs found") {
+
   const container = document.getElementById(containerId);
   if (!container) return;
 

@@ -98,7 +98,7 @@ function parseRawJobs(rawList) {
 
 async function fetchJobData() {
   try {
-    const response = await fetch('/schedule.json');
+    const response = await fetch('schedule.json');
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

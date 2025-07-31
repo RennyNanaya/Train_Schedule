@@ -154,7 +154,7 @@ function classifyJobs(jobs, start, end) {
 function organizeJobsByDate(jobs, calendarStart, calendarEnd) {
   const calendarDays = {};
 
-  for (let i = 0; i <= 13; i++) {
+  for (let i = 0; i <= 14; i++) {
     const date = addDays(calendarStart, i);
     const key = date.toISOString().split("T")[0];
     calendarDays[key] = [];
@@ -166,14 +166,14 @@ function organizeJobsByDate(jobs, calendarStart, calendarEnd) {
 
     while (current <= end && current <= calendarEnd) {
   const adjusted = new Date(current);
-  adjusted.setDate(adjusted.getDate() + 1); // bump forward
+  adjusted.setDate(adjusted.getDate()+1); // bump forward
   const key = adjusted.toISOString().split("T")[0];
 
   if (calendarDays[key]) {
     calendarDays[key].push(job);
   }
 
-  current.setDate(current.getDate() + 1);
+  current.setDate(current.getDate()+1);
 }
 
   });
@@ -184,23 +184,26 @@ function organizeJobsByDate(jobs, calendarStart, calendarEnd) {
 // --- Render Job Bubbles ---
 function renderCalendar(calendarDays, futureJobs) {
   const typePriority = { train: 3, sampling: 2, nonStandard: 1 };
-  const keys = Object.keys(calendarDays).slice(0, 14);
-  
-  
+  const allKeys = Object.keys(calendarDays);
+const firstSundayIdx = allKeys.findIndex(date => new Date(date).getDay() === 0);
+const keys = allKeys.slice(firstSundayIdx, firstSundayIdx + 14);
 
-  keys.forEach((key, idx) => {
-    const dayBox = document.getElementById(`day-${idx}`);
-    if (!dayBox) return;
-	const currentDate = new Date(key); // assuming key is a date string
-const dateLabel = document.createElement("div");
-dateLabel.className = "date-label";
-dateLabel.textContent = currentDate.toLocaleDateString("en-US", {
-  weekday: "short",
-  month: "short",
-  day: "numeric",
-});
+ 
+keys.forEach((key, idx) => {
+  const dayBox = document.getElementById(`day-${idx}`);
+  if (!dayBox) return;
 
-dayBox.appendChild(dateLabel);
+  const currentDate = new Date(key);
+  const dateLabel = document.createElement("div");
+  dateLabel.className = "date-label";
+  dateLabel.textContent = currentDate.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+
+  dayBox.appendChild(dateLabel);
+
 
 
     const sorted = calendarDays[key].sort((a, b) => {

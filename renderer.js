@@ -1,358 +1,355 @@
-let jobData = [];
+// --- Class Definitions ---
+class JobEntry {
+  constructor(startDate, endDate, inspector, type) {
+    this.startDate = new Date(startDate);
+    this.endDate = new Date(endDate);
+    this.inspector = inspector;
+    this.type = type;
+  }
+}
 
-function loadJobData() {
-const eventsContainer = document.getElementById("events");
-const upcomingContainer = document.getElementById("upcoming");
-const lastWeekContainer = document.getElementById("last-week-summary"); // If you use one
-  
-fetch("schedule.json")
-  .then(res => {
-    if (!res.ok) throw new Error("Primary fetch failed");
-    return res.json();
-  })
-  .catch(() => {
-    console.warn("Primary fetch failed. Trying fallback...");
-    return fetch("").then(res => {
-      if (!res.ok) throw new Error("Fallback fetch failed");
-      return res.json();
-    });
-  })
-  .then(data => {
-    const validJobs = [];
-    const invalidDateJobs = [];
+class TrainJob extends JobEntry {
+  constructor(jobNumber, customer, siteLocation, carCount, commodityType, testList, inspector, startDate, endDate) {
+    super(startDate, endDate, inspector, "train");
+    this.jobNumber = jobNumber;
+    this.customer = customer;
+    this.siteLocation = siteLocation;
+    this.carCount = carCount;
+    this.commodityType = commodityType;
+    this.testList = testList;
+  }
+}
 
-data.forEach(job => {
-      if (isActualDate(job.date)) {
-        validJobs.push({ ...job, parsedDate: new Date(job.date) });
-      } else {
-        invalidDateJobs.push(job);
-      }
-    });
+class SamplingJob extends JobEntry {
+  constructor(customer, location, containerCount, containerType, testList, inspector, startDate, endDate) {
+    super(startDate, endDate, inspector, "sampling");
+    this.customer = customer;
+    this.location = location;
+    this.containerCount = containerCount;
+    this.containerType = containerType;
+    this.testList = testList;
+  }
+}
 
-      jobData = validJobs.sort((a, b) => {
-        const dA = parseJobDate(a.date);
-        const dB = parseJobDate(b.date);
-        return (!dA ? 1 : !dB ? -1 : dB - dA);
+class NonStandardEvent extends JobEntry {
+  constructor(description, startDate, endDate) {
+    super(startDate, endDate, undefined, "nonStandard");
+	this.assignment = assignment;
+    this.description = description;
+  }
+}
+
+function parseRawJobs(rawList) {
+  const jobs = [];
+
+  rawList.forEach(entry => {
+    const rawJob = entry.job;
+    const isValidStart = entry.startDate && entry.startDate !== "Pushed";
+
+    const startDate = isValidStart ? new Date(entry.startDate) : null;
+    const endDate = entry.endDate ? new Date(entry.endDate) : startDate || new Date();
+
+    const inspector = entry.assigned || "Unassigned";
+
+    if (!isNaN(parseInt(rawJob))) {
+      // 🚂 Train Job
+      jobs.push({
+        type: "train",
+        jobNumber: rawJob,
+        customer: entry.client,
+        siteLocation: entry.location,
+        carCount: entry.CarNo,
+        commodityType: entry.Commodity,
+        testList: Array.isArray(entry.tests) ? entry.tests.join(", ").trim() : "",
+        inspector,
+        startDate: isValidStart ? entry.startDate : "⏱️TBD",
+        endDate
       });
 
-      const nextWeekRange = getWeekRange(new Date(), 1);
-      const scheduledJobs = jobData.filter(isScheduled);
-      //const upcomingJobs = jobData.filter(job => isUpcoming(job, nextWeekRange.end));
+    } else if (rawJob === "SPL") {
+      // 🧪 Sampling Job
+      jobs.push({
+        type: "sampling",
+        customer: entry.client,
+        location: entry.location,
+        containerCount: entry.CarNo || "",
+        container: entry.Container || "",
+        testList: Array.isArray(entry.tests) ? entry.tests.join(", ").trim() : "",
+        inspector,
+        startDate,
+        endDate
+      });
 
-
-const upcomingJobs = jobData.filter(job => {
-  const d = parseJobDate(job.date);
-  return !d || d > nextWeekRange.end;
-});
-
-console.log("nextWeekRange:", nextWeekRange.start.toDateString(), "→", nextWeekRange.end.toDateString());
-console.log(upcomingJobs);
-if (eventsContainer) eventsContainer.innerHTML = "";
-  if (upcomingContainer) upcomingContainer.innerHTML = "";
-      renderScheduledWeeks(scheduledJobs);
-rotateOverflowEntries(); // 👈 New sparkle added here
-      renderJobList("upcoming", upcomingJobs);
-      renderLastWeekSummary(jobData);
-    });
-}
-
-// Initial load
-loadJobData();
-
-// 🔄 Refresh every 10 minutes (600,000 ms)
-setInterval(loadJobData, 600000);
-
-function isActualDate(dateStr) {
-  // Let blank values pass through untouched — they're handled later
-  if (!dateStr || dateStr.trim() === "") return true;
-
-  const d = new Date(dateStr);
-  return d instanceof Date && !isNaN(d);
-}
-
-  
-
-function getSunday(date = new Date()) {
-  const d = new Date(date);
-  d.setDate(d.getDate() - d.getDay());
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function getWeekRange(baseDate, offset) {
-  const start = new Date(getSunday(baseDate));
-  start.setDate(start.getDate() + offset * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  return { start, end };
-}
-
-function parseJobDate(str) {
-  const parts = str?.includes("/") ? str.split("/") : str?.split("-");
-  if (!parts || parts.length !== 3) return null;
-
-  let month, day, year;
-  if (str.includes("/")) {
-    [month, day, year] = parts;
-  } else {
-    [year, month, day] = parts;
-  }
-
-  return new Date(+year, +month - 1, +day);
-}
-
-function isScheduled(job) {
-  return !!job.date?.trim();
-}
-function isUpcoming(job, nextWeekEnd) {
-  const d = parseJobDate(job.date);
-  return !job.date || d > nextWeekEnd;
-}
-
-function isWithinRange(job, start, end) {
-  const d = parseJobDate(job.date);
-  return d && d >= start && d <= end;
-}
-
-function formatDate(dateObj) {
-  if (!(dateObj instanceof Date) || isNaN(dateObj)) return "--";
-
-  return dateObj.toISOString().split("T")[0];
-}
-
-function renderLastWeekSummary(jobData) {
-  const lastWeekList = document.getElementById("last-week-list");
-  const summaryContainer = document.getElementById("last-week-summary");
-  
-
-    if (!(lastWeekList && summaryContainer)) return;
-
-  // 🧹 Clear out the old list before rendering new items
-  lastWeekList.innerHTML = "";
-
-
-  const thisWeekRange = getWeekRange(new Date(), 0);
-  const oneWeekAgoStart = new Date(thisWeekRange.start);
-  oneWeekAgoStart.setDate(oneWeekAgoStart.getDate() - 7);
-  const oneWeekAgoEnd = new Date(thisWeekRange.start);
-
-  const lastWeekEvents = jobData.filter(evt => {
-    if (!evt.date) return false;
-
-    const d = parseJobDate(evt.date)
-
-    return d >= oneWeekAgoStart && d < oneWeekAgoEnd;
+    } else {
+      // 📝 NonStandard Event
+      jobs.push({
+        type: "nonStandard",
+        description: rawJob,
+        assigned: entry.assigned,
+        client: entry.client,
+        startDate,
+        endDate
+      });
+    }
   });
 
-  if (lastWeekEvents.length > 0) {
-    lastWeekEvents.forEach(evt => {
-      const li = document.createElement("li");
-      li.textContent = `${formatDate(new Date(evt.date))}: ${evt.job} (${evt.client}, ${evt.location}) - ${evt.assigned}`;
-      lastWeekList.appendChild(li);
-    });
-    summaryContainer.style.display = "block";
-  } else {
-    lastWeekList.innerHTML = "<li>No jobs last week</li>";
+  return jobs;
+}
+
+async function fetchJobData() {
+  try {
+    const response = await fetch('/schedule.json');
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const rawJobs = await response.json();
+    return parseRawJobs(rawJobs); // feed into parser
+  } catch (error) {
+    console.error("Failed to fetch jobs:", error);
+    return [];
   }
 }
 
-function renderScheduledWeeks(jobs) {
-  const today = new Date();
-  const lastWeekDate = new Date();
-  lastWeekDate.setDate(today.getDate() - 7);
+// --- DOM Ready ---
+document.addEventListener("DOMContentLoaded", async () => {
+  const today = new Date("2025-07-30");
+  const startOfWeek = getStartOfWeek(today);
+  const endOfNextWeek = addDays(startOfWeek, 13);
 
-  const weeks = [
-    { label: `Shipping Week ${getCGCShippingWeek(today)}`, offset: 0 },
-    { label: `Shipping Week ${getCGCShippingWeek(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7))}`, offset: 1 },
-  ];
+  const jobs = await fetchJobData(); // 🌐 Get & parse your JSON
 
-  weeks.forEach(({ label, offset }) => {
-    const range = getWeekRange(today, offset);
-    const weekEvents = jobs.filter(job => {
-  if (!job.date || job.date.trim() === "") return false;
+  const { inCalendar, futureJobs } = classifyJobs(jobs, startOfWeek, endOfNextWeek);
+  const { calendarDays } = organizeJobsByDate(inCalendar, startOfWeek, endOfNextWeek);
 
-  const parts = job.date.split("/").map(str => str.trim());
-  if (parts.length !== 3) return false;
-
-  const [month, day, year] = parts;
-  const parsed = new Date(+year, +month - 1, +day);
-
-  // Only include if parsed is valid and within range
-  return !isNaN(parsed) && parsed >= range.start && parsed <= range.end;
+  renderCalendar(calendarDays, futureJobs);
+  renderWeekTitles(startOfWeek);
+  renderSidePanels(jobs, today);
 });
-console.log("Week:", label, "Jobs:", weekEvents.length);
 
-    renderWeekGrid(label, range, weekEvents);
+// --- Job Filtering ---
+function classifyJobs(jobs, start, end) {
+  const inCalendar = [], futureJobs = [];
 
+  jobs.forEach(job => {
+    const s = new Date(job.startDate);
+    const isValidStart = !isNaN(s.getTime());
 
-  });
-}
-
-function rotateOverflowEntries() {
-  document.querySelectorAll(".day-cell").forEach(cell => {
-    const entries = Array.from(cell.querySelectorAll(".entry-box"));
-
-    if (entries.length <= 3) {
-      entries.forEach(e => e.classList.add("visible"));
+    if (!isValidStart) {
+      // Optionally log or categorize as "unscheduled"
+      console.warn("Invalid start date for job:", job);
       return;
     }
 
-    let visibleIndex = 0;
-
-    setInterval(() => {
-      entries.forEach(e => e.classList.remove("visible"));
-
-      for (let i = 0; i < 3; i++) {
-        const idx = (visibleIndex + i) % entries.length;
-        entries[idx].classList.add("visible");
-      }
-
-      visibleIndex = (visibleIndex + 3) % entries.length;
-    }, 4000);
+    if (s > end) {
+      futureJobs.push(job);
+    } else {
+      inCalendar.push(job);
+    }
   });
+
+  return { inCalendar, futureJobs };
 }
-function renderJobList(containerId, jobs, fallbackMessage = "No jobs found") {
 
-  const container = document.getElementById(containerId);
-  if (!container) return;
+// --- Organize Jobs By Day ---
+function organizeJobsByDate(jobs, calendarStart, calendarEnd) {
+  const calendarDays = {};
 
-  container.innerHTML = "";
-
-  if (jobs.length === 0) {
-    container.innerHTML = `<p>${fallbackMessage}</p>`;
-    return;
+  for (let i = 0; i <= 13; i++) {
+    const date = addDays(calendarStart, i);
+    const key = date.toISOString().split("T")[0];
+    calendarDays[key] = [];
   }
-
-  const list = document.createElement("ul");
-  list.className = "upcoming-list";
 
   jobs.forEach(job => {
-    const li = document.createElement("li");
-    li.className = "upcoming-item";
+    let current = new Date(job.startDate);
+    const end = new Date(job.endDate);
 
-    const dateStr = job.date && job.date.trim() !== ""
-      ? formatDate(new Date(job.date))
-      : "🕓 TBD";
+    while (current <= end && current <= calendarEnd) {
+  const adjusted = new Date(current);
+  adjusted.setDate(adjusted.getDate() + 1); // bump forward
+  const key = adjusted.toISOString().split("T")[0];
 
-    li.innerHTML = `
-      <strong>${job.job} - (${job.client} ${job.location})</strong>${dateStr} <br> ${job.CarNo} ${job.Commodity} 
-    `;
-
-    list.appendChild(li);
-  });
-
-  container.appendChild(list);
-}
-
-const thisWeekRange = getWeekRange(new Date(), 0); // Current week
-
-function renderWeekGrid(label, range, events) {
-  const container = document.getElementById("events");
-
-  // Create wrapper section for one full week
-  const weekSection = document.createElement("div");
-  weekSection.className = "week-section";
-
-  // Create and add the heading
-  const heading = document.createElement("div");
-  heading.className = "week-header";
-  heading.textContent = `${label} (${formatDate(range.start)} → ${formatDate(range.end)})`;
-  weekSection.appendChild(heading);
-
-  // Create grid container
-  const grid = document.createElement("div");
-  grid.className = "week-row";
-
-  // Populate 7 day cells
-  for (let i = 0; i < 7; i++) {
-  const day = new Date(range.start);
-  day.setDate(day.getDate() + i);
-
-  const cell = document.createElement("div");
-  cell.className = "day-cell";
-
-  const dayName = day.toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric'
-  });
-  cell.innerHTML = `<h3>${dayName}</h3>`;
-
-  const dayEvents = events.filter(evt => {
-    if (!evt.date) return false;
-    const evtDate = parseJobDate(evt.date)
-    return evtDate.toDateString() === day.toDateString(); // ✅ this should now be safe
-  });
-
-  dayEvents.forEach(evt => {
-    const box = document.createElement("div");
-    box.className = "entry-box";
-    box.innerHTML = `
-      <div class="highlight_job">${evt.job} - </div><div class="highlight">${evt.client} ${evt.location}</div>
-	  <div>${evt.CarNo} - ${evt.Commodity}</div>
-	  <div>${evt.tests.map(t => t.trim()).join(", ")}</div>
-      <div class="assignment">${evt.assigned}</div>
-
-    `;
-    cell.appendChild(box);
-  });
-
-  grid.appendChild(cell);
-}
-
-  // Add grid to section, then section to main container
-  weekSection.appendChild(grid);
-  
-  container.appendChild(weekSection);
-}
-
-
-
-function getCGCShippingWeek(date = new Date()) {
-  let augFirst = new Date(date.getFullYear(), 7, 1); // August 1
-
-  if (date < augFirst) {
-    augFirst.setFullYear(augFirst.getFullYear() - 1);
+  if (calendarDays[key]) {
+    calendarDays[key].push(job);
   }
 
-  // First Sunday after August 1
+  current.setDate(current.getDate() + 1);
+}
+
+  });
+
+  return { calendarDays };
+}
+
+// --- Render Job Bubbles ---
+function renderCalendar(calendarDays, futureJobs) {
+  const typePriority = { train: 3, sampling: 2, nonStandard: 1 };
+  const keys = Object.keys(calendarDays).slice(0, 14);
+  
+  
+
+  keys.forEach((key, idx) => {
+    const dayBox = document.getElementById(`day-${idx}`);
+    if (!dayBox) return;
+	const currentDate = new Date(key); // assuming key is a date string
+const dateLabel = document.createElement("div");
+dateLabel.className = "date-label";
+dateLabel.textContent = currentDate.toLocaleDateString("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+});
+
+dayBox.appendChild(dateLabel);
+
+
+    const sorted = calendarDays[key].sort((a, b) => {
+      const diff = typePriority[a.type] - typePriority[b.type];
+      return diff !== 0 ? diff : new Date(a.startDate) - new Date(b.startDate);
+    });
+const jobCount = sorted.length;
+const isCondensed = jobCount > 3;
+
+	sorted.forEach(job => {
+	  const bubble = document.createElement("div");
+	  bubble.className = `job-bubble ${job.type}`;
+
+	// Non-standard Bubbles (Red at the bottom)
+	  if (job.type === "nonStandard") {
+		bubble.innerHTML = `<div class="NSbubble"><strong>${job.assigned} - ${job.description} ${job.client}</strong></div>`;
+		bubble.style.position = "absolute";
+		bubble.style.bottom = "4px";
+		bubble.style.left = "4px";
+		bubble.style.right = "4px";
+
+	  } else if (job.type === "train") {
+	//Train Bubbles (Blue at the Top)	 
+	if (isCondensed) {
+  dayBox.classList.add("condensed-day");
+}
+
+	let text = `
+	  <div class="bubbletitle number"><strong>${job.jobNumber}</strong></div><div class="bubbleassignment">${job.inspector}</div>
+	  <div class="bubbletitle"><strong>${job.customer} - ${job.siteLocation}</strong></div>
+	  <div class="bubblebody">${job.carCount} cars – ${job.commodityType}</div>
+	`;
+	if (job.testList && job.testList.trim() !== "") {  text += `<div class="bubblebody">${job.testList}</div><br>`;}
+	
+	bubble.innerHTML = text;
+	  } else {
+	//Sampling Bubbles (Green below Trains)
+	bubble.innerHTML = `
+	<div class="bubbleassignment">${job.inspector}</div>
+		  <div class="bubbletitle"><strong>${job.customer} ${job.location}</strong></div>
+		  <div class="bubblebody">${job.containerCount} – ${job.container}</div>
+		  `;
+	  }
+	  dayBox.appendChild(bubble);
+	});
+});
+}
+
+// --- Week Titles ---
+function renderWeekTitles(startOfWeek) {
+  const formatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit" });
+
+  for (let i = 0; i < 2; i++) {
+    const weekStart = addDays(startOfWeek, i * 7);
+    const weekEnd = addDays(weekStart, 6);
+    const weekNum = getCGCShippingWeek(weekStart);
+    const title = `Shipping week ${weekNum} (${formatter.format(weekStart)} → ${formatter.format(weekEnd)})`;
+
+    const titleElem = document.getElementById(`week-title-${i}`);
+    if (titleElem) {
+      titleElem.textContent = title;
+    }
+  }
+}
+
+function renderSidePanels(jobs, referenceDate) {
+  const pastTrains = document.getElementById("past-trains");
+  const upcomingTrains = document.getElementById("upcoming-trains");
+
+  const weekStart = getStartOfWeek(referenceDate);
+  const weekEnd = getEndOfNextWeek(referenceDate);
+
+  jobs.forEach(job => {
+    if (job.type !== "train") return;
+		console.log(job.jobNumber, " - Start:", job.startDate);
+		const start = isDate(job.startDate) ? new Date(job.startDate) : null;
+		console.log("Resolved:", start);
+		const formattedDate = start
+		  ? start.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+		  : "⏱️TBD";
+
+
+
+		if (start && start < weekStart) {
+		  const card = createJobCard(job, formattedDate, true);
+		  pastTrains.appendChild(card);
+
+		} else if (!start || start > weekEnd) {
+		  const card = createJobCard(job, formattedDate, false);
+		  upcomingTrains.appendChild(card);
+		}
+
+
+	});
+}
+
+// --- CGC Shipping Week Calculator ---
+function getCGCShippingWeek(date = new Date()) {
+  let augFirst = new Date(date.getFullYear(), 7, 1);
+  if (date < augFirst) augFirst.setFullYear(augFirst.getFullYear() - 1);
+
   let shippingStart = new Date(augFirst);
-  let dayOfWeek = shippingStart.getDay();
-  let offset = 7 - dayOfWeek;
+  let offset = 7 - shippingStart.getDay();
   shippingStart.setDate(shippingStart.getDate() + offset);
 
-  // Calculate days difference
-  const diffInDays = Math.floor((date - shippingStart) / (1000 * 60 * 60 * 24));
-
-  let shippingWeek;
-  if (diffInDays >= 0) {
-    shippingWeek = Math.floor(diffInDays / 7) + 1;
-  } else {
-    // If it's the week before the shipping calendar starts, label it Week 52
-    shippingWeek = 52;
-  }
-
-  return shippingWeek;
+  const diff = Math.floor((date - shippingStart) / (1000 * 60 * 60 * 24));
+  return diff >= 0 ? Math.floor(diff / 7) + 1 : 52;
 }
-
-function updateCountdown() {
-  const minutes = Math.floor(countdownSeconds / 60);
-  const seconds = countdownSeconds % 60;
-  countdownDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  countdownSeconds--;
-
-  if (countdownSeconds < 0) {
-    countdownSeconds = 600;
-    loadJobData(); // Refresh your data
-	countdownSeconds = 600;
-countdownDisplay.classList.add("flash");
-setTimeout(() => countdownDisplay.classList.remove("flash"), 800);
-  }
+// --- Utilities ---
+function getStartOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - day);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
-
-// Start the timer
-let countdownSeconds = 600; // 10 minutes
-let countdownDisplay = document.getElementById("countdown");
-
-updateCountdown();
-setInterval(updateCountdown, 1000); // Update every second
+function getEndOfNextWeek(date) {
+  const start = getStartOfWeek(date);
+  start.setDate(start.getDate() + 13); // End of next week (start + 13 days)
+  start.setHours(23, 59, 59, 999); // end of day
+  return start;
+}
+function addDays(date, num) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + num);
+  return result;
+}
+function isDate(value) {
+  const date = new Date(value);
+  return !isNaN(date.getTime());
+}
+function validateJob(job) {
+  const start = new Date(job.startDate);
+  return isValidDate(start);
+}
+function createJobCard(job, formattedDate, isPast) {
+  const card = document.createElement("div");
+  card.className = "job-card"; // For styling
+const additional = isPast
+  ? `<strong> - ${job.inspector}</strong> </div> ${job.carCount} Cars - ${job.commodityType}`
+  : `<div>${job.carCount} Cars - ${job.commodityType}</div>`;
+const fullText = `
+  <div class="job-info">
+    <div class=sidebarhighlight><strong>${job.jobNumber}</strong> – ${job.customer}
+    ${job.siteLocation} - ${formattedDate}</div>
+  ${additional}
+  <div class="job-date ${isPast ? "past" : "upcoming"}"></div>
+  <br>
+`;
+card.innerHTML = fullText;
+  return card;
+}

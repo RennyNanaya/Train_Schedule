@@ -2,33 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Two-Week Train Tracker</title>
-<link rel="stylesheet" href="styles.css" />
+  <title>Plain Calendar</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="swipe-container">
-    <div class="swipe-panel" id="panel-schedule">
-      <div id="events"></div>
-    </div>
+<div class="layout">
+  <!-- 🗓️ Calendar Panel -->
+  <div class="calendar-panel">
 
-    <div class="swipe-panel" id="panel-trains">
-      <div id="sidebar">
-        <h2>📅 Upcoming Trains</h2>
-        <div id="upcoming">
-          <ul id="future-list"></ul>
-        </div>
+<div class="calendar">
+  <!-- Week 1 Wrapper -->
+  <div class="week-block">
+    <div class="week-title" id="week-title-0"></div>
+    <div class="week" id="week-0">
 
-        <div id="last-week-summary">
-          <h3>Previous Trains</h3>
-          <ul id="last-week-list"></ul>
-        </div>
-      </div>
+      <div class="day" id="day-0"></div>
+      <div class="day" id="day-1"></div>
+      <div class="day" id="day-2"></div>
+      <div class="day" id="day-3"></div>
+      <div class="day" id="day-4"></div>
+      <div class="day" id="day-5"></div>
+      <div class="day" id="day-6"></div>
     </div>
   </div>
 
-  <div id="refresh-countdown" class="refresh-timer">
-    Next refresh in: <span id="countdown">10:00</span>
+
+
+  <!-- Week 2 Wrapper -->
+  <div class="week-block">
+    <div class="week-title" id="week-title-1"></div>
+    <div class="week" id="week-1">
+
+      <div class="day" id="day-7"></div>
+      <div class="day" id="day-8"></div>
+      <div class="day" id="day-9"></div>
+      <div class="day" id="day-10"></div>
+      <div class="day" id="day-11"></div>
+      <div class="day" id="day-12"></div>
+      <div class="day" id="day-13"></div>
+    </div>
   </div>
+</div>
+</div>
+<!-- 📋 Sidebar Panel -->
+  <div class="sidebar-panel">
+    <h3>Upcoming Trains</h3>
+    <ul id="upcoming-trains"></ul>
+
+    <h3>Past Week Trains</h3>
+    <ul id="past-trains"></ul>
+  </div>
+</div>
+
 
   <script src="renderer.js"></script>
 </body>
